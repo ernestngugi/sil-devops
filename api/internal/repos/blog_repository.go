@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/ernestngugi/sil-devops/api/internal/db"
-	"github.com/ernestngugi/sil-devops/api/internal/model"
+	"github.com/ernestngugi/sil-devops/internal/db"
+	"github.com/ernestngugi/sil-devops/internal/model"
 )
 
 const (
