@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/ernestngugi/sil-devops/api/internal/db"
+	"github.com/ernestngugi/sil-devops/internal/db"
 )
 
 const defaultPort = "3000"
