@@ -5,11 +5,16 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+
+	"github.com/ernestngugi/sil-devops/api/internal/db"
 )
 
 const defaultPort = "3000"
 
 func main() {
+
+	dB := db.InitDB()
+	defer dB.Close()
 
 	port := os.Getenv("PORT")
 	if port == "" {
