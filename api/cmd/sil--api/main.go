@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/ernestngugi/sil-devops/internal/db"
+	"github.com/ernestngugi/sil-devops/internal/web/router.go"
 )
 
 const defaultPort = "3000"
@@ -21,8 +22,11 @@ func main() {
 		port = defaultPort
 	}
 
+	appRouter := router.BuildRouter(dB)
+
 	server := &http.Server{
-		Addr: ":" + port,
+		Addr:    ":" + port,
+		Handler: appRouter,
 	}
 
 	fmt.Printf("api starting, listening on :%v", port)
