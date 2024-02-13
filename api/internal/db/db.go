@@ -3,13 +3,17 @@ package db
 import (
 	"context"
 	"database/sql"
+	"embed"
 	"fmt"
+	"log"
 	"os"
 
 	_ "github.com/lib/pq"
+	"github.com/pressly/goose/v3"
 )
 
-var db DB
+//go:embed migrations/*.sql
+var embedMigrations embed.FS
 
 type SQLOperations interface {
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
@@ -39,13 +43,13 @@ func InitDBWithURL(databaseURL string) DB {
 		fmt.Println("database url is required")
 	}
 
-	dB, err := sql.Open("postgres", databaseURL)
+	appDB, err := sql.Open("postgres", databaseURL)
 	if err != nil {
 		fmt.Printf("sql.Open failed: %v", err)
 	}
 
-	db = &AppDB{
-		DB:    dB,
+	db := &AppDB{
+		DB:    appDB,
 		valid: true,
 	}
 
@@ -54,5 +58,22 @@ func InitDBWithURL(databaseURL string) DB {
 		fmt.Printf("db ping failed: %v", err)
 	}
 
+	runDBMigration(appDB)
+
 	return db
+}
+
+func runDBMigration(db *sql.DB) {
+
+	goose.SetBaseFS(embedMigrations)
+
+	if err := goose.SetDialect("postgres"); err != nil {
+		log.Fatal("cannot set goose dialect: ", err)
+	}
+
+	if err := goose.Up(db, "migrations"); err != nil {
+		log.Fatal("failed to run migrate up: ", err)
+	}
+
+	log.Print("db migrated successfully")
 }
