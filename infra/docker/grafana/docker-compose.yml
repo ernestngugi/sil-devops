@@ -1,0 +1,44 @@
+version: "3.9"
+
+volumes:
+  prometheus:
+  grafana:
+  alertmanager-data:
+
+services:
+  grafana:
+    image: grafana/grafana:9.1.6
+    ports:
+      - "3001:3001"
+    environment:
+      GF_SERVER_HTTP_PORT: 3001
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_DISABLE_LOGIN_FORM: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+    volumes:
+      - ./config/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+      - grafana:/var/lib/grafana
+
+  prometheus:
+    image: prom/prometheus:v2.27.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config:/etc/prometheus
+      - prometheus:/prometheus
+    command:
+      [
+        '--config.file=/etc/prometheus/prometheus.yml',
+        '--enable-feature=remote-write-receiver',
+        '--query.lookback-delta=30s'
+      ]
+
+  alertmanager:
+    image: prom/alertmanager:v0.23.0
+    restart: unless-stopped
+    ports:
+      - "9093:9093"
+    volumes:
+      - "./config:/config"
+      - alertmanager-data:/data
+    command: --config.file=/config/alertmanager.yml
