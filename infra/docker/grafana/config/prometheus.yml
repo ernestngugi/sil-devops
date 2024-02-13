@@ -1,0 +1,30 @@
+global:
+  scrape_interval:     5s
+  evaluation_interval: 15s
+
+rule_files:
+  - alert.yml
+
+alerting:
+  alertmanagers:
+    - scheme: http
+      static_configs:
+      - targets: [ 'localhost:9093' ]
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets:
+          - localhost:9090
+
+  - job_name: 'alertmanager'
+    metrics_path: /metrics
+    static_configs:
+      - targets: 
+          - 192.168.100.243:9093
+
+  - job_name: 'sil-api'
+    metrics_path: /metrics
+    static_configs:
+      - targets:
+          - 192.168.100.243:3000
