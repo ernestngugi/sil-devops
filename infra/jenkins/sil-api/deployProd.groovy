@@ -20,10 +20,34 @@ node {
         }
     }
 
-    stage("build and deploy") {
+    stage("build docker container") {
         dir ('api') {
             sh '''
             sudo docker-compose up -d
+        '''
+        }
+    }
+
+    stage("remove sil-api image") {
+        dir ('api') {
+            sh '''
+            sudo docker rm go-blog
+        '''
+        }
+    }
+
+    stage("build sil-api image") {
+        dir ('api') {
+            sh '''
+            sudo docker build -t go-blog .
+        '''
+        }
+    }
+
+    stage("run sil-api image") {
+        dir ('api') {
+            sh '''
+            sudo docker run go-blog
         '''
         }
     }
