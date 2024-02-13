@@ -28,13 +28,13 @@ node {
         }
     }
 
-    // stage("remove sil-api image") {
-    //     dir ('api') {
-    //         sh '''
-    //         sudo docker rm go-blog
-    //     '''
-    //     }
-    // }
+    stage("remove sil-api image") {
+        dir ('api') {
+            sh '''
+            sudo docker rm go-blog
+        '''
+        }
+    }
 
     stage("build sil-api image") {
         dir ('api') {
