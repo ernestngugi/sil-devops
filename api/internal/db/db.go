@@ -15,6 +15,8 @@ import (
 //go:embed migrations/*.sql
 var embedMigrations embed.FS
 
+var db DB
+
 type SQLOperations interface {
 	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
@@ -43,13 +45,13 @@ func InitDBWithURL(databaseURL string) DB {
 		fmt.Println("database url is required")
 	}
 
-	appDB, err := sql.Open("postgres", databaseURL)
+	dB, err := sql.Open("postgres", databaseURL)
 	if err != nil {
 		fmt.Printf("sql.Open failed: %v", err)
 	}
 
-	db := &AppDB{
-		DB:    appDB,
+	db = &AppDB{
+		DB:    dB,
 		valid: true,
 	}
 
@@ -58,7 +60,7 @@ func InitDBWithURL(databaseURL string) DB {
 		fmt.Printf("db ping failed: %v", err)
 	}
 
-	runDBMigration(appDB)
+	runDBMigration(dB)
 
 	return db
 }
