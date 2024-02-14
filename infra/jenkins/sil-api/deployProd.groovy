@@ -31,7 +31,7 @@ node {
     stage("remove sil-api image") {
         dir ('api') {
             sh '''
-            sudo docker image rm go-blog --force
+            sudo docker rmi go-blog --force
         '''
         }
     }
