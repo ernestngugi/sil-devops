@@ -47,7 +47,7 @@ node {
     stage("run sil-api image") {
         dir ('api') {
             sh '''
-            sudo docker run -d go-blog
+            sudo docker run -p 3000:3000 -d go-blog
         '''
         }
     }
