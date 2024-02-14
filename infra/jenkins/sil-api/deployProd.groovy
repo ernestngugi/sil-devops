@@ -31,8 +31,8 @@ node {
     stage("remove sil-api image") {
         dir ('api') {
             sh '''
-            sudo docker stop $(docker images 'go-blog' -q)
-            sudo docker rmi $(docker images 'go-blog' -q)
+            sudo docker stop $(docker images --format '{{.Repository}}' | grep 'go-blog')
+            sudo docker rmi $(docker images --format '{{.Repository}}' | grep 'go-blog')
         '''
         }
     }
