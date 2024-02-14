@@ -2,30 +2,17 @@ package main
 
 import (
 	"errors"
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/ernestngugi/sil-devops/internal/db"
 	"github.com/ernestngugi/sil-devops/internal/web/router.go"
-	"github.com/joho/godotenv"
 )
 
 const defaultPort = "3000"
 
 func main() {
-
-	var envFilePath string
-	flag.StringVar(&envFilePath, "e", "", "Path to env file")
-	flag.Parse()
-
-	if envFilePath != "" {
-		err := godotenv.Load(envFilePath)
-		if err != nil {
-			panic(fmt.Errorf("failed to load env file: %v", err))
-		}
-	}
 
 	dB := db.InitDB()
 	defer dB.Close()

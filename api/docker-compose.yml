@@ -14,12 +14,10 @@ services:
       - POSTGRES_DB=savannah
       - POSTGRES_PASSWORD=password
       - POSTGRES_USER=savannah
-  
+
   sil-api:
     container_name: sil-api
-    build: 
-      context: .
-      dockerfile: Dockerfile
+    build: .
     ports:
       - 3000:3000
     restart: on-failure
