@@ -15,8 +15,6 @@ RUN \
 
 COPY --from=builder /app/sil-api .
 
-COPY .env .
-
 EXPOSE 3000
 
-CMD ["./sil-api", "-e", ".env"]
+CMD ["./sil-api"]
