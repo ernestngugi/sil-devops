@@ -9,19 +9,19 @@ import (
 )
 
 const (
-	createBlog     = "INSERT INTO blogs (title, description, date_created, date_modified) VALUES ($1, $2, $3, $4)"
-	updateBlog     = "UPDATE blogs SET title = ?, description = ?, date_modified = ? WHERE id = ?"
-	selectBlog     = "SELECT id, title, description, date_created, date_modified FROM blogs"
-	selectBlogByID = selectBlog + " WHERE id = ?"
-	deleteBlog     = "DELETE blogs WHERE id = ?"
+	createBlogSQL     = "INSERT INTO blogs (title, description, date_created, date_modified) VALUES ($1, $2, $3, $4) RETURNING id"
+	updateBlogSQL     = "UPDATE blogs SET title = $1, description = $2, date_modified = $3 WHERE id = $4"
+	selectBlogSQL     = "SELECT id, title, description, date_created, date_modified FROM blogs"
+	selectBlogByIDSQL = selectBlogSQL + " WHERE id = $1"
+	deleteBlogSQL     = "DELETE FROM blogs WHERE id = $1"
 )
 
 type (
 	BlogRepository interface {
-		ListBlogs(ctx context.Context, dB db.DB) ([]*model.Blog, error)
-		Save(ctx context.Context, dB db.DB, blog *model.Blog) error
-		BlogByID(ctx context.Context, dB db.DB, blogID int64) (*model.Blog, error)
-		DeleteBlog(ctx context.Context, dB db.DB, blogID int64) error
+		ListBlogs(ctx context.Context, operations db.SQLOperations) ([]*model.Blog, error)
+		Save(ctx context.Context, operations db.SQLOperations, blog *model.Blog) error
+		BlogByID(ctx context.Context, operations db.SQLOperations, blogID int64) (*model.Blog, error)
+		DeleteBlog(ctx context.Context, operations db.SQLOperations, blogID int64) error
 	}
 
 	AppBlogRepository struct{}
@@ -33,13 +33,13 @@ func NewBlogRepository() BlogRepository {
 
 func (r *AppBlogRepository) DeleteBlog(
 	ctx context.Context,
-	dB db.DB,
+	operations db.SQLOperations,
 	blogID int64,
 ) error {
 
-	_, err := dB.ExecContext(
+	_, err := operations.ExecContext(
 		ctx,
-		deleteBlog,
+		deleteBlogSQL,
 		blogID,
 	)
 	if err != nil {
@@ -51,12 +51,12 @@ func (r *AppBlogRepository) DeleteBlog(
 
 func (r *AppBlogRepository) ListBlogs(
 	ctx context.Context,
-	dB db.DB,
+	operations db.SQLOperations,
 ) ([]*model.Blog, error) {
 
-	rows, err := dB.QueryContext(
+	rows, err := operations.QueryContext(
 		ctx,
-		selectBlog,
+		selectBlogSQL,
 	)
 	if err != nil {
 		return []*model.Blog{}, err
@@ -89,15 +89,15 @@ func (r *AppBlogRepository) ListBlogs(
 
 func (r *AppBlogRepository) BlogByID(
 	ctx context.Context,
-	dB db.DB,
+	operations db.SQLOperations,
 	blogID int64,
 ) (*model.Blog, error) {
 
 	var blog model.Blog
 
-	err := dB.QueryRowContext(
+	err := operations.QueryRowContext(
 		ctx,
-		selectBlogByID,
+		selectBlogByIDSQL,
 		blogID,
 	).Scan(
 		&blog.ID,
@@ -115,7 +115,7 @@ func (r *AppBlogRepository) BlogByID(
 
 func (r *AppBlogRepository) Save(
 	ctx context.Context,
-	dB db.DB,
+	operations db.SQLOperations,
 	blog *model.Blog,
 ) error {
 
@@ -124,22 +124,24 @@ func (r *AppBlogRepository) Save(
 
 	if blog.ID == 0 {
 
-		_, err := dB.ExecContext(
+		err := operations.QueryRowContext(
 			ctx,
-			createBlog,
+			createBlogSQL,
 			blog.Title,
 			blog.Description,
 			blog.DateCreated,
 			blog.DateModified,
-		)
+		).Scan(&blog.ID)
 		if err != nil {
 			return err
 		}
+
+		return nil
 	}
 
-	_, err := dB.ExecContext(
+	_, err := operations.ExecContext(
 		ctx,
-		updateBlog,
+		updateBlogSQL,
 		blog.Title,
 		blog.Description,
 		blog.DateModified,
